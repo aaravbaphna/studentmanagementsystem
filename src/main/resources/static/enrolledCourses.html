@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Enrolled Courses</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f2f2f2;
+      padding: 2rem;
+    }
+
+    .enrolled-container {
+      max-width: 800px;
+      margin: auto;
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .top-left-btn {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      padding: 10px 15px;
+      background-color: #1976d2;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .top-left-btn:hover {
+      background-color: #0d47a1;
+    }
+
+    .course-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      margin-bottom: 1rem;
+      background-color: #fafafa;
+    }
+
+    .course-item span {
+      font-weight: 500;
+    }
+
+    .drop-btn {
+      padding: 6px 12px;
+      background-color: #e53935;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .drop-btn:hover {
+      background-color: #c62828;
+    }
+  </style>
+</head>
+<body>
+
+  <button onclick="window.location.href='dashboard.html'" class="top-left-btn">Back</button>
+
+  <div class="enrolled-container">
+    <h1>My Enrolled Courses</h1>
+    <div id="courseList">
+
+    </div>
+  </div>
+
+  <script>
+    window.onload = function () {
+      const studentData = JSON.parse(localStorage.getItem("studentData"));
+      const courseList = document.getElementById("courseList");
+      courseList.innerHTML = "";
+
+      if (!studentData) {
+        alert("Please log in to view your enrolled courses.");
+        window.location.href = "titlePage.html";
+        return;
+      }
+
+      fetchCourses(studentData.studentId);
+    };
+
+    function fetchCourses(studentId) {
+      const courseList = document.getElementById("courseList");
+      courseList.innerHTML = "";
+
+      fetch(`http://localhost:4000/api/enrolled-courses?studentId=${studentId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.length === 0) {
+            courseList.innerHTML = "<p>No courses enrolled.</p>";
+            return;
+          }
+
+          data.forEach(course => {
+            const courseItem = document.createElement("div");
+            courseItem.className = "course-item";
+
+            const courseText = document.createElement("span");
+            courseText.textContent = `${course.CourseName} - ${course.Credits} credits`;
+
+            const dropButton = document.createElement("button");
+            dropButton.textContent = "Drop";
+            dropButton.className = "drop-btn";
+
+            dropButton.onclick = function () {
+              const confirmDrop = confirm(`Are you sure you want to drop "${course.CourseName}"?`);
+              if (!confirmDrop) return;
+
+              fetch("http://localhost:4000/api/drop-course", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                  studentId: parseInt(localStorage.getItem("studentData") ? JSON.parse(localStorage.getItem("studentData")).studentId : 0),
+                  courseId: course.CourseID
+                })
+              })
+                .then(res => res.json())
+                .then(response => {
+                  if (response.success) {
+                    alert(`✅ ${response.message}`);
+                    fetchCourses(studentId); // Refresh list
+                  } else {
+                    alert(`❌ ${response.error}`);
+                  }
+                })
+                .catch(err => {
+                  console.error("❌ Drop course error:", err);
+                  alert("Failed to drop course.");
+                });
+            };
+
+            courseItem.appendChild(courseText);
+            courseItem.appendChild(dropButton);
+            courseList.appendChild(courseItem);
+          });
+        })
+        .catch(err => {
+          console.error("❌ Error fetching enrolled courses:", err);
+          courseList.innerHTML = "<p>Failed to load enrolled courses.</p>";
+        });
+    }
+  </script>
+
+</body>
+</html>

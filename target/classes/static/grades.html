@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>View Grades</title>
+  <link rel="stylesheet" href="grades.css" />
+</head>
+<body>
+
+
+  <button class="top-left-btn" onclick="goBack()">← Back</button>
+
+
+  <div class="grades-container">
+    <h1>Your Grades</h1>
+
+    <table id="gradesTable">
+      <thead>
+        <tr>
+          <th>Course Name</th>
+          <th>Credits</th>
+          <th>Grade</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    function goBack() {
+      window.history.back();
+    }
+
+    window.onload = function () {
+      const exampleGrades = ["A", "A-", "B+", "B", "C+", "C"];
+      const tableBody = document.querySelector("#gradesTable tbody");
+      tableBody.innerHTML = ""; 
+
+      const studentData = JSON.parse(localStorage.getItem("studentData"));
+      if (!studentData) {
+        alert("Please log in to view grades.");
+        window.location.href = "titlePage.html";
+        return;
+      }
+
+      fetch(`http://localhost:4000/api/enrolled-courses?studentId=${studentData.studentId}`)
+        .then(res => res.json())
+        .then(courses => {
+          console.log("✅ Enrolled courses fetched:", courses);
+
+          if (!Array.isArray(courses) || courses.length === 0) {
+            const row = document.createElement("tr");
+            row.innerHTML = `<td colspan="3">No enrolled courses found.</td>`;
+            tableBody.appendChild(row);
+            return;
+          }
+
+          courses.forEach(course => {
+            const grade = exampleGrades[Math.floor(Math.random() * exampleGrades.length)];
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td>${course.CourseName}</td>
+              <td>${course.Credits}</td>
+              <td>${grade}</td>
+            `;
+            tableBody.appendChild(row);
+          });
+        })
+        .catch(err => {
+          console.error("❌ Failed to fetch enrolled courses:", err);
+          const row = document.createElement("tr");
+          row.innerHTML = `<td colspan="3">Failed to load enrolled courses.</td>`;
+          tableBody.appendChild(row);
+        });
+    };
+  </script>
+
+</body>
+</html>

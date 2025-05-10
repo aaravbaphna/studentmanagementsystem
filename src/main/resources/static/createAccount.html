@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Create Account</title>
+  <link rel="stylesheet" href="createAccount.css" />
+</head>
+<body>
+  <a href="titlePage.html" class="back-button">Back</a>
+
+  <div class="form-container">
+    <h1>Create Student Account</h1>
+    <form id="createAccountForm">
+      <label for="studentName">Student Name</label>
+      <input type="text" id="studentName" name="studentName" required />
+
+      <label for="studentEmail">Student Email</label>
+      <input type="email" id="studentEmail" name="studentEmail" required />
+
+      <label for="password">Create Password</label>
+      <input type="password" id="password" name="password" required />
+
+      <label for="confirmPassword">Confirm Password</label>
+      <input type="password" id="confirmPassword" name="confirmPassword" required />
+
+      <button type="submit">Create Account</button>
+      <p id="errorMsg" class="error-message"></p>
+    </form>
+  </div>
+
+  <script src="createAccount.js"></script>
+</body>
+</html>
