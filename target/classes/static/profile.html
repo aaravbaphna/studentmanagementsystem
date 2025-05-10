@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Student Profile</title>
+  <link rel="stylesheet" href="profile.css" />
+</head>
+<body>
+  <div class="profile-container">
+    <h1>Student Profile</h1>
+
+    <p><strong>Name:</strong> <span id="studentName">Loading...</span></p>
+    <p><strong>Email:</strong> <span id="studentEmail">Loading...</span></p>
+
+    <button onclick="goBack()">Back to Dashboard</button>
+    <button onclick="logout()">Logout</button>
+  </div>
+
+  <script>
+    // profile.js logic embedded directly for simplicity
+    window.onload = function () {
+      const studentData = JSON.parse(localStorage.getItem('studentData'));
+
+      if (!studentData) {
+        window.location.href = 'titlePage.html'; // redirect if not logged in
+        return;
+      }
+
+      document.getElementById('studentName').textContent = studentData.name;
+      document.getElementById('studentEmail').textContent = studentData.email;
+    };
+
+    function goBack() {
+      window.location.href = 'dashboard.html';
+    }
+
+    function logout() {
+      localStorage.removeItem('studentData');
+      window.location.href = 'titlePage.html';
+    }
+  </script>
+</body>
+</html>
