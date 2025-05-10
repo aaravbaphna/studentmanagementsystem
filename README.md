@@ -13,6 +13,8 @@ The system uses:
 - **MySQL** for database management  
 - **Node.js/Express** for API handling and routing  
 - **HTML/CSS/JavaScript** for the frontend  
+- (VS Code) - IDE
+
 
 ---
 
