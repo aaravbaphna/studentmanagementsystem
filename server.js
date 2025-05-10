@@ -9,7 +9,7 @@ const PORT = 4000;
 app.use(cors());
 app.use(express.json());
 
-// ✅ MySQL connection config
+// MySQL connection config
 const db = mysql.createConnection({
   host: "localhost",
   user: "root",
@@ -18,16 +18,16 @@ const db = mysql.createConnection({
   connectTimeout: 5000  // optional timeout for debugging
 });
 
-// ✅ Connect to database
+// Connect to database
 db.connect(err => {
   if (err) {
     console.error("❌ Database connection failed:", err.message);
     return;
   }
-  console.log("✅ Connected to MySQL database");
+  console.log(" Connected to MySQL database");
 });
 
-// ✅ API Route
+// API Route
 app.get("/api/courses", (req, res) => {
   console.log("➡️  GET /api/courses hit");
 
@@ -38,12 +38,12 @@ app.get("/api/courses", (req, res) => {
       return;
     }
 
-    console.log("✅ Query successful, sending data");
+    console.log("Query successful, sending data");
     res.json(results);
   });
 });
 
-app.post("/api/enroll", (req, res) => {
+app.post("/api/enroll", (req, res) => { //API route for enrollment, used to enroll for courses
   let { studentId, courseId } = req.body;
 
   // Parse to integers to ensure proper type
@@ -61,7 +61,7 @@ app.post("/api/enroll", (req, res) => {
     [studentId, courseId],
     (err, results) => {
       if (err) {
-        console.error("❌ Query error:", err.message);
+        console.error("Query error:", err.message);
         return res.status(500).json({ error: "Query error" });
       }
 
@@ -74,11 +74,11 @@ app.post("/api/enroll", (req, res) => {
         [studentId, courseId],
         (err, result) => {
           if (err) {
-            console.error("❌ Enrollment insert error:", err.message);
+            console.error("Enrollment insert error:", err.message);
             return res.status(500).json({ error: "Enrollment failed" });
           }
 
-          console.log(`✅ Enrollment added: StudentID=${studentId}, CourseID=${courseId}`);
+          console.log(`Enrollment added: StudentID=${studentId}, CourseID=${courseId}`);
           res.json({ success: true });
         }
       );
@@ -88,7 +88,7 @@ app.post("/api/enroll", (req, res) => {
 
 // Get courses that the logged-in student is enrolled in
 
-// ✅ Get enrolled courses for a specific student
+// Get enrolled courses for a specific student
 app.get("/api/enrolled-courses", (req, res) => {
   const studentId = parseInt(req.query.studentId);
 
@@ -107,17 +107,17 @@ app.get("/api/enrolled-courses", (req, res) => {
 
   db.query(query, [studentId], (err, results) => {
     if (err) {
-      console.error("❌ Query error:", err.message);
+      console.error("Query error:", err.message);
       return res.status(500).json({ error: "Failed to fetch enrolled courses" });
     }
 
-    console.log(`✅ Found ${results.length} enrolled course(s)`);
+    console.log(`Found ${results.length} enrolled course(s)`);
     res.json(results);
   });
 });
 
 
-app.post("/api/createAccount", (req, res) => {
+app.post("/api/createAccount", (req, res) => { //API route for to create an account
   console.log("➡️  POST /api/createAccount hit with:", req.body);
   const { name, email, password } = req.body;
 
@@ -132,11 +132,11 @@ app.post("/api/createAccount", (req, res) => {
       if (err.code === "ER_DUP_ENTRY") {
         return res.status(409).json({ error: "Email already exists" });
       }
-      console.error("❌ Insert error:", err.message);
+      console.error("Insert error:", err.message);
       return res.status(500).json({ error: "Failed to create account" });
     }
 
-    console.log("✅ Account created for:", email);
+    console.log("ccount created for:", email);
     res.status(201).json({ message: "Account created successfully" });
   });
 });
@@ -155,7 +155,7 @@ app.post("/api/titlePage", (req, res) => {
     [email],
     (err, results) => {
       if (err) {
-        console.error("❌ Query error:", err.message);
+        console.error("Query error:", err.message);
         return res.status(500).json({ error: "Internal server error" });
       }
 
@@ -176,13 +176,39 @@ app.post("/api/titlePage", (req, res) => {
         Email: user.Email
       };
 
-      console.log("✅ Login successful for:", studentData.Email);
+      console.log("Login successful for:", studentData.Email);
       res.json(studentData);
     }
   );
 });
 
-// ✅ Start server
+app.post("/api/drop-course", (req, res) => {
+  const { studentId, courseId } = req.body;
+
+  if (!studentId || !courseId) {
+    return res.status(400).json({ error: "Missing studentId or courseId" });
+  }
+
+  db.query(
+    "DELETE FROM enrollments WHERE StudentID = ? AND CourseID = ?",
+    [studentId, courseId],
+    (err, result) => {
+      if (err) {
+        console.error("Drop course query error:", err.message);
+        return res.status(500).json({ error: "Failed to drop course" });
+      }
+
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ error: "Enrollment not found" });
+      }
+
+      res.json({ success: true, message: `Dropped course ID ${courseId}` });
+    }
+  );
+});
+
+
+// Start server
 app.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);
 });
